@@ -1,0 +1,25 @@
+{
+  "name": "claude-code-on-kluster-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@kubernetes/client-node": "^1.0.0",
+    "better-sqlite3": "^11.7.0",
+    "grammy": "^1.31.0",
+    "otpauth": "^9.3.6",
+    "pino": "^9.6.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.0",
+    "@types/qrcode": "^1.5.5",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
