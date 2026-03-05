@@ -4,7 +4,7 @@ metadata:
   name: bot-config
   namespace: claude-sessions
 data:
-  ALLOWED_USER_IDS: "1725010739"
+  ALLOWED_USER_IDS: "REPLACE_ME"  # comma-separated Telegram user IDs
   K8S_NAMESPACE: "claude-sessions"
   RUNNER_IMAGE: "claude-code-on-kluster-runner:latest"
   RUNTIME_MODE: "k8s"
