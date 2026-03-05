@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claude-bot
+  namespace: claude-sessions
+  labels:
+    app: claude-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: claude-bot
+  template:
+    metadata:
+      labels:
+        app: claude-bot
+    spec:
+      serviceAccountName: claude-bot
+      containers:
+        - name: bot
+          image: claude-code-on-kluster-bot:latest
+          imagePullPolicy: Never
+          env:
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: bot-secrets
+                  key: telegram-bot-token
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bot-secrets
+                  key: encryption-key
+            - name: DB_PATH
+              value: /data/bot.db
+            - name: RUNTIME_MODE
+              value: "k8s"
+          envFrom:
+            - configMapRef:
+                name: bot-config
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: claude-credentials
+              mountPath: /config/credentials
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: bot-data
+        - name: claude-credentials
+          secret:
+            secretName: claude-secrets
+            items:
+              - key: credentials.json
+                path: credentials.json
+              - key: claude-config.json
+                path: claude-config.json

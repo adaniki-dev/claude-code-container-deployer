@@ -1,0 +1,32 @@
+services:
+  bot:
+    build:
+      context: ./bot
+      args:
+        DOCKER_GID: ${DOCKER_GID:-1001}
+    env_file: .env
+    environment:
+      - RUNTIME_MODE=docker
+      - DB_PATH=/data/bot.db
+    volumes:
+      - bot-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CLAUDE_CONFIG_PATH:-/dev/null}:/config/.claude.json:ro
+    restart: unless-stopped
+    depends_on:
+      - runner
+
+  runner:
+    build: ./runner
+    container_name: claude-runner
+    environment:
+      - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-}
+    volumes:
+      - runner-workspace:/home/claude/workspace
+      - runner-claude-config:/home/claude/.claude
+    restart: unless-stopped
+
+volumes:
+  bot-data:
+  runner-workspace:
+  runner-claude-config:

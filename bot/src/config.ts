@@ -12,7 +12,7 @@ function optional(name: string, fallback: string): string {
 
 export const config = {
   telegramToken: required("TELEGRAM_BOT_TOKEN"),
-  anthropicApiKey: required("ANTHROPIC_API_KEY"),
+  anthropicApiKey: env["ANTHROPIC_API_KEY"] ?? "", // optional — login by session/subscription
   encryptionKey: required("ENCRYPTION_KEY"), // 32-byte hex for AES-256-GCM
   allowedUserIds: required("ALLOWED_USER_IDS")
     .split(",")
@@ -24,4 +24,10 @@ export const config = {
   ),
   dbPath: optional("DB_PATH", "/data/bot.db"),
   logLevel: optional("LOG_LEVEL", "info"),
+  runtimeMode: optional("RUNTIME_MODE", "k8s") as "docker" | "k8s",
+  runnerContainerName: optional("RUNNER_CONTAINER_NAME", "claude-runner"),
+  dockerNetwork: optional("DOCKER_NETWORK", "claude-code-on-kluster_default"),
+  claudeOauthToken: env["CLAUDE_CODE_OAUTH_TOKEN"] ?? "",
+  claudeCredentialsPath: env["CLAUDE_CREDENTIALS_PATH"] ?? "",
+  claudeConfigPath: env["CLAUDE_CONFIG_PATH"] ?? "",
 } as const;

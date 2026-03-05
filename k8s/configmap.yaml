@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bot-config
+  namespace: claude-sessions
+data:
+  ALLOWED_USER_IDS: "1725010739"
+  K8S_NAMESPACE: "claude-sessions"
+  RUNNER_IMAGE: "claude-code-on-kluster-runner:latest"
+  RUNTIME_MODE: "k8s"
+  LOG_LEVEL: "info"
