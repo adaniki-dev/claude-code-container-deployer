@@ -24,6 +24,11 @@ bot.catch((err) => {
   logger.error({ err: err.error }, "Bot error");
 });
 
+if (config.enableApi) {
+  const { startApiServer } = await import("./api/server.js");
+  startApiServer();
+}
+
 bot.start({
   onStart: () => logger.info("Bot started"),
 });

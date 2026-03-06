@@ -30,4 +30,7 @@ export const config = {
   claudeOauthToken: env["CLAUDE_CODE_OAUTH_TOKEN"] ?? "",
   claudeCredentialsPath: env["CLAUDE_CREDENTIALS_PATH"] ?? "",
   claudeConfigPath: env["CLAUDE_CONFIG_PATH"] ?? "",
+  enableApi: optional("ENABLE_API", "false") === "true",
+  apiKey: env["API_KEY"] ?? "",
+  apiPort: parseInt(optional("API_PORT", "3000"), 10),
 } as const;

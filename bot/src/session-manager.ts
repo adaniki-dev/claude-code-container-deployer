@@ -8,4 +8,5 @@ export interface SessionManager {
   setupToken(telegramId: number, token: string): Promise<void>;
   startRemoteControl(telegramId: number): Promise<string>;
   stopRemoteControl(telegramId: number): Promise<void>;
+  executePrompt(telegramId: number, prompt: string, timeoutMs?: number): Promise<string>;
 }

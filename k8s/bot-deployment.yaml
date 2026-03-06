@@ -20,6 +20,13 @@ spec:
         - name: bot
           image: claude-code-on-kluster-bot:latest
           imagePullPolicy: Never
+          ports:
+            - name: api
+              containerPort: 3000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: bot-config
           env:
             - name: TELEGRAM_BOT_TOKEN
               valueFrom:
@@ -31,13 +38,16 @@ spec:
                 secretKeyRef:
                   name: bot-secrets
                   key: encryption-key
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bot-secrets
+                  key: api-key
+                  optional: true
             - name: DB_PATH
               value: /data/bot.db
             - name: RUNTIME_MODE
               value: "k8s"
-          envFrom:
-            - configMapRef:
-                name: bot-config
           volumeMounts:
             - name: data
               mountPath: /data

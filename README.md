@@ -207,6 +207,54 @@ kubectl apply -f k8s/bot-deployment.yaml
 - Runner pods use `serviceAccountName: claude-runner` with cluster-scoped RBAC
 - Bot communicates with runners via `kubectl exec`
 
+## HTTP API
+
+An optional REST API that lets you send prompts to Claude directly, without Telegram or Remote Control.
+
+### Enable
+
+Set `ENABLE_API=true` in your `.env` file. Optionally set `API_KEY` to require authentication.
+
+```env
+ENABLE_API=true
+API_KEY=my-secret-key   # optional — if set, requires X-API-Key header
+API_PORT=3000            # optional — default 3000
+```
+
+### Endpoints
+
+**POST /api/prompt** — Send a prompt to Claude
+
+```bash
+curl -X POST http://localhost:3000/api/prompt \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: my-secret-key" \
+  -d '{"prompt": "Explain Docker in one sentence", "timeout": 300000}'
+```
+
+Response:
+```json
+{"response": "Docker packages applications into lightweight, portable containers...", "duration_ms": 5432}
+```
+
+**GET /api/health** — Check API and container status
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+Response:
+```json
+{"status": "ok", "container_running": true}
+```
+
+### How it works
+
+- A dedicated container (sentinel ID `-1`) is created on the first request (lazy init)
+- Prompts are executed via `claude -p -` (stdin), avoiding shell injection
+- The container stays running for subsequent requests — only the first request has cold start overhead
+- If `API_KEY` is set, all requests must include the `X-API-Key` header
+
 ## Configuration Reference
 
 | Variable | Required | Default | Description |
@@ -224,6 +272,9 @@ kubectl apply -f k8s/bot-deployment.yaml
 | `K8S_NAMESPACE` | No | `claude-sessions` | Kubernetes namespace |
 | `DB_PATH` | No | `/data/bot.db` | SQLite database path |
 | `LOG_LEVEL` | No | `info` | Log level (debug, info, warn, error) |
+| `ENABLE_API` | No | `false` | Enable HTTP API for direct prompts |
+| `API_KEY` | No | — | API key for authentication (optional) |
+| `API_PORT` | No | `3000` | HTTP API listen port |
 
 \* **Authentication**: `CLAUDE_CREDENTIALS_PATH` + `CLAUDE_CONFIG_PATH` is the recommended approach (full scopes, supports remote-control). `CLAUDE_CODE_OAUTH_TOKEN` is a fallback with limited scopes.
 
@@ -252,6 +303,8 @@ kubectl apply -f k8s/bot-deployment.yaml
 │   │   ├── manager-factory.ts  # Runtime mode factory
 │   │   ├── auth/
 │   │   │   └── totp.ts     # TOTP generation, verification, QR codes
+│   │   ├── api/
+│   │   │   └── server.ts   # HTTP API server (optional)
 │   │   ├── commands/
 │   │   │   ├── login.ts    # /login — TOTP registration & auth
 │   │   │   ├── start.ts    # /start — provision & remote-control

@@ -9,3 +9,5 @@ data:
   RUNNER_IMAGE: "claude-code-on-kluster-runner:latest"
   RUNTIME_MODE: "k8s"
   LOG_LEVEL: "info"
+  ENABLE_API: "false"
+  API_PORT: "3000"

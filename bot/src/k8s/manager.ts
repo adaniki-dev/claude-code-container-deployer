@@ -342,6 +342,45 @@ export const k8sManager: SessionManager = {
     }
   },
 
+  async executePrompt(telegramId, prompt, timeoutMs = 300_000) {
+    const podName = await getPodName(telegramId);
+    if (!podName) throw new Error("No running pod found for this session");
+
+    return new Promise<string>((resolve, reject) => {
+      const proc = spawn("kubectl", [
+        "exec", "-i", "-n", ns, podName, "-c", "claude", "--",
+        "claude", "-p", "-",
+      ], { stdio: ["pipe", "pipe", "pipe"] });
+
+      let stdout = "";
+      let stderr = "";
+      const timer = setTimeout(() => {
+        proc.kill();
+        reject(new Error("Prompt execution timed out"));
+      }, timeoutMs);
+
+      proc.stdout?.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
+      proc.stderr?.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
+
+      proc.stdin?.write(prompt);
+      proc.stdin?.end();
+
+      proc.on("close", (code) => {
+        clearTimeout(timer);
+        if (code === 0) {
+          resolve(stdout.trim());
+        } else {
+          reject(new Error(`claude exited with code ${code}: ${stderr}`));
+        }
+      });
+
+      proc.on("error", (err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
+  },
+
   async stopRemoteControl(telegramId) {
     const proc = remoteControlProcesses.get(telegramId);
     if (proc) {
